@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.epicgames.EpicGamesLauncher</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>LicenseRef-proprietary</project_license>
+  <name>Epic Games Launcher</name>
+  <summary>Install and manage games from the Epic Games Store</summary>
+  <summary xml:lang="es">Instala y administra juegos de Epic Games Store</summary>
+  <developer id="com.epicgames">
+    <name>Epic Games, Inc.</name>
+  </developer>
+  <description>
+    <p>
+      The Epic Games Launcher Preview runs natively on Linux and lets you
+      access your Epic Games Store library, install games and manage downloads.
+    </p>
+    <p>
+      This community-maintained Flatpak downloads the official Linux AppImage
+      from Epic during installation. Windows games may require a compatibility layer.
+    </p>
+    <p xml:lang="es">
+      Epic Games Launcher Preview se ejecuta de forma nativa en Linux.
+      Permite consultar tu biblioteca de Epic Games Store, instalar juegos
+      y administrar las descargas.
+    </p>
+    <p xml:lang="es">
+      Este Flatpak mantenido por la comunidad descarga el AppImage oficial
+      de Epic durante la instalación. Los juegos de Windows pueden necesitar
+      una capa de compatibilidad.
+    </p>
+  </description>
+  <launchable type="desktop-id">com.epicgames.EpicGamesLauncher.desktop</launchable>
+  <url type="homepage">https://launcher.epicgames.com/</url>
+  <url type="help">https://www.epicgames.com/help/</url>
+  <url type="bugtracker">https://github.com/KernelFreeze/EpicGamesLauncher-Flatpak/issues</url>
+  <url type="vcs-browser">https://github.com/KernelFreeze/EpicGamesLauncher-Flatpak</url>
+  <categories>
+    <category>Game</category>
+  </categories>
+  <content_rating type="oars-1.1">
+    <content_attribute id="money-purchasing">intense</content_attribute>
+    <content_attribute id="social-info">moderate</content_attribute>
+  </content_rating>
+  <releases>
+    <release version="0.95.2+gfa9ad49" date="2026-10-14" type="development">
+      <url>https://launcher.epicgames.com/</url>
+      <description>
+        <p>Initial Flatpak packaging of the official Linux Preview.</p>
+        <p xml:lang="es">Primer empaquetado Flatpak del Preview oficial para Linux.</p>
+      </description>
+    </release>
+  </releases>
+</component>

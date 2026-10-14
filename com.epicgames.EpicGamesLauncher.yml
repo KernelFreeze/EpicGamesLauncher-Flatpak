@@ -1,0 +1,64 @@
+app-id: com.epicgames.EpicGamesLauncher
+branch: stable
+runtime: org.gnome.Platform
+runtime-version: '51'
+sdk: org.gnome.Sdk
+command: epic-games-launcher
+separate-locales: false
+
+finish-args:
+  - --share=network
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --socket=pulseaudio
+  - --device=dri
+  - --env=GTK_USE_PORTAL=1
+  - --talk-name=org.kde.StatusNotifierWatcher
+  # Bibliotecas de juegos y unidades externas.
+  - --filesystem=~/Games:create
+  - --filesystem=/run/media
+  - --filesystem=/media
+  - --filesystem=/mnt
+
+modules:
+  - name: unappimage
+    buildsystem: simple
+    build-commands:
+      # El AppImage usa Zstandard; el extractor anterior a C23 necesita C17.
+      - make -C squashfs-tools -j ${FLATPAK_BUILDER_N_JOBS} ZSTD_SUPPORT=1 EXTRA_CFLAGS=-std=gnu17 install INSTALL_DIR=/app/bin
+    sources:
+      - type: git
+        url: https://github.com/refi64/unappimage.git
+        commit: d7f86f2a0d7ec3a69211125207d5f127386b849a
+
+  - modules/libayatana-appindicator.json
+
+  - name: epic-games-launcher
+    buildsystem: simple
+    build-commands:
+      - test "${FLATPAK_ARCH}" = x86_64
+      - install -Dm755 apply_extra.sh /app/bin/apply_extra
+      - install -Dm755 epic-games-launcher.sh /app/bin/epic-games-launcher
+      - install -Dm644 com.epicgames.EpicGamesLauncher.desktop /app/share/applications/com.epicgames.EpicGamesLauncher.desktop
+      - install -Dm644 com.epicgames.EpicGamesLauncher.metainfo.xml /app/share/metainfo/com.epicgames.EpicGamesLauncher.metainfo.xml
+      - install -Dm644 com.epicgames.EpicGamesLauncher.png /app/share/icons/hicolor/256x256/apps/com.epicgames.EpicGamesLauncher.png
+    sources:
+      - type: extra-data
+        filename: epic-games-launcher.appimage
+        only-arches:
+          - x86_64
+        # Versión 0.95.2+gfa9ad49: URL fijada tras resolver la descarga oficial.
+        url: https://content-download-egs.distro.on.epicgames.com/Builds/EGLv2/0.95.2%2Bgfa9ad49/Linux/EpicGamesLauncher-x86_64.AppImage?launcherfilename=EpicGamesLauncher-x86_64.AppImage
+        sha256: 7066159ec987afcdc27069f070b456bdb9a805bd5f02114aa7ad86e5559cbfd5
+        size: 176355832
+      - type: file
+        path: apply_extra.sh
+      - type: file
+        path: epic-games-launcher.sh
+      - type: file
+        path: com.epicgames.EpicGamesLauncher.desktop
+      - type: file
+        path: com.epicgames.EpicGamesLauncher.metainfo.xml
+      - type: file
+        path: icons/com.epicgames.EpicGamesLauncher.png

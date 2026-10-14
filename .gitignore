@@ -1,0 +1,12 @@
+/.flatpak-builder/
+/.cache/
+/builddir/
+/repo/
+/export/
+/result/
+*.flatpak
+*.flatpakref
+*.flatpakrepo
+*.log
+*~
+*.swp

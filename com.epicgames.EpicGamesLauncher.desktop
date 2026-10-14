@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Epic Games Launcher
+Comment=Install and manage games from the Epic Games Store
+Comment[es]=Instala y administra juegos de Epic Games Store
+Exec=epic-games-launcher %u
+Icon=com.epicgames.EpicGamesLauncher
+Terminal=false
+Type=Application
+Categories=Game;
+StartupWMClass=EpicGamesLauncher
+MimeType=x-scheme-handler/com.epicgames.launcher;
