@@ -26,6 +26,8 @@ flatpak run com.epicgames.EpicGamesLauncher
 
 La entrada del menú registra el protocolo `com.epicgames.launcher://` del launcher. El wrapper conserva los argumentos para los enlaces de inicio de sesión. En NVIDIA activa `WEBKIT_DISABLE_DMABUF_RENDERER=1` para evitar el cierre por error de protocolo de Wayland observado con este Preview. Puedes definir esa variable explícitamente para cambiar el comportamiento.
 
+El permiso `--talk-name=org.freedesktop.secrets` permite al launcher comunicarse con el servicio de credenciales del escritorio mediante D-Bus.
+
 Los datos propios del Flatpak quedan en `~/.var/app/com.epicgames.EpicGamesLauncher/`. El manifiesto permite instalar juegos en `~/Games` y acceder a unidades montadas en `/run/media`, `/media` y `/mnt`. Para usar otra biblioteca, concede acceso a su carpeta:
 
 ```bash
@@ -39,8 +41,8 @@ El paquete contiene el launcher nativo. Los juegos de Windows pueden necesitar u
 Después de compilar:
 
 ```bash
-flatpak build-bundle repo epic-games-launcher-0.95.2-x86_64.flatpak com.epicgames.EpicGamesLauncher stable
-flatpak install --user ./epic-games-launcher-0.95.2-x86_64.flatpak
+flatpak build-bundle repo epic-games-launcher-0.95.2-1-x86_64.flatpak com.epicgames.EpicGamesLauncher stable
+flatpak install --user ./epic-games-launcher-0.95.2-1-x86_64.flatpak
 ```
 
 El bundle conserva la referencia a `extra-data`; la instalación necesita conexión para descargar el AppImage de Epic.
@@ -69,6 +71,8 @@ Las actualizaciones de este paquete se distribuyen mediante Flatpak. Tras cambia
 
 La versión 0.95.2+gfa9ad49 se compiló e instaló en x86_64 con GNOME 51 el 14 de octubre de 2026. Se comprobaron la sintaxis de los scripts, los metadatos AppStream, la entrada de escritorio, las bibliotecas enlazadas y la conservación de los avisos de terceros. La extracción de `extra-data` y el registro de la bandeja terminaron correctamente.
 
+Tras añadir el permiso de Secret Service, se recompiló e instaló el paquete. El servicio `org.freedesktop.secrets` respondió correctamente a `org.freedesktop.DBus.Peer.Ping` desde el sandbox.
+
 El arranque y la pantalla de inicio de sesión se verificaron en Wayland dentro de Cage, con una salida virtual de 1280 × 720. Para abrir una sesión de prueba anidada:
 
 ```bash
@@ -81,7 +85,7 @@ El launcher debe estar cerrado antes de iniciar la prueba para que su instancia 
 
 El inicio de sesión, la persistencia de credenciales y la descarga y ejecución de juegos quedan sin probar, al igual que los equipos sin NVIDIA.
 
-El Preview emite el aviso `NoDefaultStore` al inicializar las credenciales y continúa con DPoP desactivado para esa sesión. Según la [definición del error en keyring-core](https://docs.rs/keyring-core/latest/src/keyring_core/error.rs.html), el programa no ha configurado un almacén predeterminado. El aviso queda pendiente; este manifiesto no modifica el binario de Epic.
+La primera validación del Preview emitió el aviso `NoDefaultStore` al inicializar las credenciales y continuó con DPoP desactivado para esa sesión. Según la [definición del error en keyring-core](https://docs.rs/keyring-core/latest/src/keyring_core/error.rs.html), el programa no ha configurado un almacén predeterminado. El estado de ese aviso tras abrir una nueva sesión con el permiso de Secret Service queda sin verificar; este manifiesto no modifica el binario de Epic.
 
 ## Licencias
 

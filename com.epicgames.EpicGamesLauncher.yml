@@ -15,6 +15,7 @@ finish-args:
   - --device=dri
   - --env=GTK_USE_PORTAL=1
   - --talk-name=org.kde.StatusNotifierWatcher
+  - --talk-name=org.freedesktop.secrets
   # Bibliotecas de juegos y unidades externas.
   - --filesystem=~/Games:create
   - --filesystem=/run/media
