@@ -13,7 +13,7 @@ fi
   --force-clean --disable-rofiles-fuse --repo=repo \
   "$@" builddir com.epicgames.EpicGamesLauncher.yml
 
-# apply_extra necesita un sandbox propio; la instalación se ejecuta en el host.
+# Install on the host so apply_extra can create its own sandbox.
 flatpak remote-add --user --if-not-exists --no-gpg-verify \
   epic-games-launcher-local "${PWD}/repo"
 flatpak install --user --assumeyes --noninteractive --reinstall \

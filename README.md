@@ -1,14 +1,14 @@
 # Epic Games Launcher Flatpak
 
-Manifiesto no oficial para el nuevo [Epic Games Launcher Preview para Linux](https://launcher.epicgames.com/). Convierte el AppImage oficial de la versión **0.95.2+gfa9ad49** en una aplicación Flatpak con el identificador `com.epicgames.EpicGamesLauncher`.
+Community Flatpak packaging for the native [Epic Games Launcher Preview for Linux](https://launcher.epicgames.com/). It repackages the official x86_64 AppImage as `com.epicgames.EpicGamesLauncher`.
 
-Sigue el patrón de LMStudio-Flatpak y MusicPresence-Flatpak: el [AppImage se descarga como `extra-data`](https://docs.flatpak.org/en/latest/module-sources.html#extra-data) durante la instalación y se verifica con su tamaño y SHA-256. El repositorio guarda el manifiesto, los scripts, el icono y los metadatos; el binario de Epic se obtiene de su servidor.
+Following the LMStudio-Flatpak and MusicPresence-Flatpak repositories, the manifest downloads the AppImage as [Flatpak `extra-data`](https://docs.flatpak.org/en/latest/module-sources.html#extra-data) during installation and verifies its size and SHA-256. Epic hosts the launcher binary; this repository contains the packaging scripts, metadata and icon.
 
-Usa `org.gnome.Platform//51` y `org.gnome.Sdk//51` para GTK 3 y WebKitGTK 4.1. Compila libayatana-appindicator 0.6.1 y libdbusmenu para la bandeja del sistema; las fuentes están fijadas en `modules/libayatana-appindicator.json`. Solo admite **x86_64**, la arquitectura del AppImage publicado por Epic.
+The package uses `org.gnome.Platform//51` and `org.gnome.Sdk//51` for GTK 3 and WebKitGTK 4.1. It builds libayatana-appindicator 0.6.1 and libdbusmenu for the system tray. Sources are pinned in `modules/libayatana-appindicator.json`.
 
-## Compilar e instalar para tu usuario
+## Build and install
 
-Instala Flatpak y añade Flathub para tu usuario si todavía no lo tienes:
+Install Flatpak, add Flathub for your user, then run:
 
 ```bash
 flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
@@ -16,77 +16,97 @@ flatpak install --user flathub org.flatpak.Builder
 ./build.sh
 ```
 
-`build.sh` usa `flatpak-builder` si está disponible y, en caso contrario, el de `org.flatpak.Builder`. Instala las dependencias que falten, compila el extractor y los archivos de empaquetado, exporta un repositorio OSTree a `repo/` e instala la aplicación para tu usuario desde el remoto local `epic-games-launcher-local`. La instalación se ejecuta con el Flatpak del host para que `extra-data` pueda crear su sandbox de extracción. Los archivos de compilación quedan en `builddir/`.
+`build.sh` uses a native `flatpak-builder` when available, or the version in `org.flatpak.Builder`. It installs missing dependencies, builds the package, exports an OSTree repository to `repo/`, and installs the app from the local `epic-games-launcher-local` remote. Installation runs on the host so that `extra-data` can create its extraction sandbox. Build files are stored in `builddir/`.
 
-## Ejecutar
+Prebuilt bundles are available on the [releases page](https://github.com/KernelFreeze/EpicGamesLauncher-Flatpak/releases).
+
+## Run
 
 ```bash
 flatpak run com.epicgames.EpicGamesLauncher
 ```
 
-La entrada del menú registra el protocolo `com.epicgames.launcher://` del launcher. El wrapper conserva los argumentos para los enlaces de inicio de sesión. En NVIDIA activa `WEBKIT_DISABLE_DMABUF_RENDERER=1` para evitar el cierre por error de protocolo de Wayland observado con este Preview. Puedes definir esa variable explícitamente para cambiar el comportamiento.
+The desktop entry registers the `com.epicgames.launcher://` protocol. The wrapper forwards command-line arguments, including login callback URLs. Close the launcher before testing different environment settings: an existing instance may handle subsequent launches without applying them.
 
-El permiso `--talk-name=org.freedesktop.secrets` permite al launcher comunicarse con el servicio de credenciales del escritorio mediante D-Bus.
+### NVIDIA on Wayland
 
-Los datos propios del Flatpak quedan en `~/.var/app/com.epicgames.EpicGamesLauncher/`. El manifiesto permite instalar juegos en `~/Games` y acceder a unidades montadas en `/run/media`, `/media` y `/mnt`. Para usar otra biblioteca, concede acceso a su carpeta:
+On NVIDIA, the wrapper sets `__NV_DISABLE_EXPLICIT_SYNC=1` for Wayland and keeps WebKit's DMA-BUF renderer enabled. This avoids the startup protocol error while preserving GPU acceleration. Disabling DMA-BUF instead can leave black or empty layers with WebKitGTK 2.54.1, as described in the [WebKit bug report](https://bugs.webkit.org/show_bug.cgi?id=280210#c14).
 
-```bash
-flatpak override --user --filesystem=/ruta/a/tu/biblioteca com.epicgames.EpicGamesLauncher
-```
+For X11, the wrapper retains `WEBKIT_DISABLE_DMABUF_RENDERER=1`. Explicit user settings take precedence over the wrapper defaults.
 
-El paquete contiene el launcher nativo. Los juegos de Windows pueden necesitar una capa de compatibilidad, según [las indicaciones de Epic](https://launcher.epicgames.com/#faq-linux).
-
-## Crear un paquete instalable
-
-Después de compilar:
+If an older override still disables DMA-BUF, close the launcher and test:
 
 ```bash
-flatpak build-bundle repo epic-games-launcher-0.95.2-1-x86_64.flatpak com.epicgames.EpicGamesLauncher stable
-flatpak install --user ./epic-games-launcher-0.95.2-1-x86_64.flatpak
+flatpak run --env=WEBKIT_DISABLE_DMABUF_RENDERER=0 com.epicgames.EpicGamesLauncher
 ```
 
-El bundle conserva la referencia a `extra-data`; la instalación necesita conexión para descargar el AppImage de Epic.
+To test upstream's explicit-sync behavior, use `--env=__NV_DISABLE_EXPLICIT_SYNC=0` for a fresh instance.
 
-## Actualizar el AppImage
+## Storage and permissions
 
-Descarga la versión que publica la web oficial y anota la URL final del servidor:
+Application data is stored in `~/.var/app/com.epicgames.EpicGamesLauncher/`. The manifest grants network, graphics, audio and system-tray access, plus access to the desktop Secret Service through `org.freedesktop.secrets`.
+
+Game libraries can use `~/Games` and drives mounted under `/run/media`, `/media` or `/mnt`. To allow another library directory:
 
 ```bash
-mkdir -p .cache
-curl --fail --location \
-  --output .cache/EpicGamesLauncher-x86_64.AppImage \
-  --write-out '%{url_effective}\n' \
-  https://launcher-public-service-prod06.ol.epicgames.com/launcher/api/installer/download/EpicGamesLauncher-x86_64.AppImage
-sha256sum .cache/EpicGamesLauncher-x86_64.AppImage
-stat --format=%s .cache/EpicGamesLauncher-x86_64.AppImage
+flatpak override --user --filesystem=/path/to/your/library com.epicgames.EpicGamesLauncher
 ```
 
-Actualiza `url`, `sha256` y `size` en `com.epicgames.EpicGamesLauncher.yml`, y la versión y fecha en `com.epicgames.EpicGamesLauncher.metainfo.xml`. Usa la URL final que incluye la versión, para que una nueva publicación de Epic no cambie el archivo esperado por el manifiesto. Revisa también el icono y la estructura interna cuando cambie el empaquetado de upstream.
+This package contains the native launcher. Windows games may need a compatibility layer, as explained in [Epic's Linux FAQ](https://launcher.epicgames.com/#faq-linux).
 
-`apply_extra.sh` extrae SquashFS con soporte Zstandard. Conserva el ejecutable, el SDK EOS y `ThirdPartyNotices.txt`, y usa las bibliotecas GTK, GLib y WebKit del runtime GNOME. El ejecutable y sus recursos quedan en `/app/extra/epic-games-launcher/`.
+## Create an installable bundle
 
-Las actualizaciones de este paquete se distribuyen mediante Flatpak. Tras cambiar la versión en el manifiesto, vuelve a ejecutar `./build.sh`.
+After building:
 
-## Validación local
+```bash
+flatpak build-bundle --runtime-repo=https://flathub.org/repo/flathub.flatpakrepo \
+  repo epic-games-launcher-x86_64.flatpak com.epicgames.EpicGamesLauncher stable
+flatpak install --user ./epic-games-launcher-x86_64.flatpak
+```
 
-La versión 0.95.2+gfa9ad49 se compiló e instaló en x86_64 con GNOME 51 el 14 de octubre de 2026. Se comprobaron la sintaxis de los scripts, los metadatos AppStream, la entrada de escritorio, las bibliotecas enlazadas y la conservación de los avisos de terceros. La extracción de `extra-data` y el registro de la bandeja terminaron correctamente.
+The bundle retains the `extra-data` reference. Installation needs an internet connection to download the AppImage from Epic.
 
-Tras añadir el permiso de Secret Service, se recompiló e instaló el paquete. El servicio `org.freedesktop.secrets` respondió correctamente a `org.freedesktop.DBus.Peer.Ping` desde el sandbox.
+## Upstream updates
 
-El arranque y la pantalla de inicio de sesión se verificaron en Wayland dentro de Cage, con una salida virtual de 1280 × 720. Para abrir una sesión de prueba anidada:
+The **Update launcher** workflow runs daily at 09:23 UTC and can also be started manually from GitHub Actions. It follows the official installer redirect, downloads the AppImage, calculates its SHA-256 and size, and pins the versioned URL in the manifest. New versions also receive an AppStream release entry. Updates use one automation branch and open or refresh a pull request against `main`.
+
+The workflow uses `GITHUB_TOKEN` with `contents: write` and `pull-requests: write`. Enable **Allow GitHub Actions to create and approve pull requests** in the repository's Actions settings. As in the Caelestia workflow, an optional `SPEC_UPDATE_TOKEN` secret can supply a token with those permissions, including when follow-up workflows must run on the bot's PR.
+
+To check locally without changing files:
+
+```bash
+python3 scripts/update_launcher.py --dry-run
+```
+
+To apply an upstream update locally:
+
+```bash
+python3 scripts/update_launcher.py
+./build.sh
+```
+
+Review the icon and AppImage layout when upstream changes its packaging. `apply_extra.sh` extracts the Zstandard-compressed SquashFS and retains the executable, EOS SDK and `ThirdPartyNotices.txt` under `/app/extra/epic-games-launcher/`. GTK, GLib and WebKit come from the GNOME runtime.
+
+The updater changes the packaging sources. Building, testing and publishing a new bundle remain separate steps.
+
+## Local validation
+
+Version 0.95.2+gfa9ad49 was built and installed on x86_64 with GNOME 51 on October 14, 2026. Checks covered shell syntax, AppStream metadata, the desktop entry, linked libraries, third-party notices, `extra-data` extraction and system-tray registration. The desktop Secret Service answered `org.freedesktop.DBus.Peer.Ping` from inside the sandbox.
+
+With WebKitGTK 2.54.1 and NVIDIA driver 615.78.08 on an RTX 3080, the explicit-sync workaround rendered the signed-in library correctly inside Cage at 1280 × 720 and after resizing to 1024 × 1024. Epic and its WebKit processes loaded NVIDIA libraries. A separate WebKit probe rendered transformed layers, transparency, filters and WebGL. The launcher restored the existing signed-in session after restarting.
+
+To run a nested Wayland test, close the launcher first:
 
 ```bash
 WLR_BACKENDS=wayland cage -d -- flatpak run --user com.epicgames.EpicGamesLauncher
 ```
 
-El launcher debe estar cerrado antes de iniciar la prueba para que su instancia única se abra dentro de Cage.
+The initial signed-out screen was also checked inside Cage:
 
-![Pantalla de inicio de sesión del launcher dentro de Cage](screenshots/login.png)
+![Launcher sign-in screen inside Cage](screenshots/login.png)
 
-El inicio de sesión, la persistencia de credenciales y la descarga y ejecución de juegos quedan sin probar, al igual que los equipos sin NVIDIA.
+Fresh browser-based login, DPoP, game downloads and game execution remain untested, as do systems without NVIDIA and the X11 fallback. An earlier Preview startup logged `NoDefaultStore` and disabled DPoP. Secret Service access is verified, but its effect on that upstream credential-store behavior has not been established.
 
-La primera validación del Preview emitió el aviso `NoDefaultStore` al inicializar las credenciales y continuó con DPoP desactivado para esa sesión. Según la [definición del error en keyring-core](https://docs.rs/keyring-core/latest/src/keyring_core/error.rs.html), el programa no ha configurado un almacén predeterminado. El estado de ese aviso tras abrir una nueva sesión con el permiso de Secret Service queda sin verificar; este manifiesto no modifica el binario de Epic.
+## Licenses
 
-## Licencias
-
-Los scripts y archivos de empaquetado se distribuyen bajo MIT, y los metadatos AppStream bajo CC0-1.0. El launcher, el SDK EOS y el icono conservan las licencias de Epic y de sus respectivos autores. La extracción mantiene los avisos de terceros incluidos por Epic. Las recetas y los parches de intltool y libdbusmenu proceden de [flathub/shared-modules](https://github.com/flathub/shared-modules/tree/master/libayatana-appindicator) y conservan sus atribuciones. Las dependencias compiladas mantienen sus propias licencias.
+Packaging scripts and configuration use MIT; AppStream metadata uses CC0-1.0. The launcher, EOS SDK and icon retain Epic's and their respective authors' licenses. Extraction preserves the bundled third-party notices. The intltool and libdbusmenu recipes and patches come from [flathub/shared-modules](https://github.com/flathub/shared-modules/tree/master/libayatana-appindicator) and retain their attribution. Built dependencies retain their own licenses.

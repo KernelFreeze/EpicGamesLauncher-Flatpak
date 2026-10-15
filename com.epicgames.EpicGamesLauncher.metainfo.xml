@@ -5,7 +5,6 @@
   <project_license>LicenseRef-proprietary</project_license>
   <name>Epic Games Launcher</name>
   <summary>Install and manage games from the Epic Games Store</summary>
-  <summary xml:lang="es">Instala y administra juegos de Epic Games Store</summary>
   <developer id="com.epicgames">
     <name>Epic Games, Inc.</name>
   </developer>
@@ -17,16 +16,6 @@
     <p>
       This community-maintained Flatpak downloads the official Linux AppImage
       from Epic during installation. Windows games may require a compatibility layer.
-    </p>
-    <p xml:lang="es">
-      Epic Games Launcher Preview se ejecuta de forma nativa en Linux.
-      Permite consultar tu biblioteca de Epic Games Store, instalar juegos
-      y administrar las descargas.
-    </p>
-    <p xml:lang="es">
-      Este Flatpak mantenido por la comunidad descarga el AppImage oficial
-      de Epic durante la instalación. Los juegos de Windows pueden necesitar
-      una capa de compatibilidad.
     </p>
   </description>
   <launchable type="desktop-id">com.epicgames.EpicGamesLauncher.desktop</launchable>
@@ -46,7 +35,6 @@
       <url>https://launcher.epicgames.com/</url>
       <description>
         <p>Initial Flatpak packaging of the official Linux Preview.</p>
-        <p xml:lang="es">Primer empaquetado Flatpak del Preview oficial para Linux.</p>
       </description>
     </release>
   </releases>

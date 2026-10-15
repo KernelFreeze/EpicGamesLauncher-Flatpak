@@ -5,7 +5,7 @@ cd /app/extra
 APP_IMAGE=epic-games-launcher.appimage
 DEST=epic-games-launcher
 
-# Una segunda ejecución sobre una extracción completa no cambia el resultado.
+# Re-running after a complete extraction leaves the installed files intact.
 if [[ ! -f "$APP_IMAGE" ]]; then
   test -x "$DEST/usr/bin/EpicGamesLauncher"
   exit 0
@@ -14,8 +14,8 @@ fi
 rm -rf squashfs-root "$DEST.new"
 unappimage -no-progress -no-xattrs "$APP_IMAGE"
 
-# GNOME aporta GTK, WebKit y GLib. Conservamos el ejecutable y los recursos
-# de Epic, incluido EOS y sus avisos de terceros, en su estructura original.
+# GNOME provides GTK, WebKit and GLib. Keep Epic's executable and resources,
+# including EOS and third-party notices, in their original layout.
 mkdir -p "$DEST.new/usr/bin" "$DEST.new/usr/lib"
 cp -a squashfs-root/usr/bin/EpicGamesLauncher "$DEST.new/usr/bin/"
 cp -a squashfs-root/usr/lib/epic-games-launcher "$DEST.new/usr/lib/"

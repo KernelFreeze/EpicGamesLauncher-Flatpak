@@ -16,7 +16,7 @@ finish-args:
   - --env=GTK_USE_PORTAL=1
   - --talk-name=org.kde.StatusNotifierWatcher
   - --talk-name=org.freedesktop.secrets
-  # Bibliotecas de juegos y unidades externas.
+  # Game libraries and external drives.
   - --filesystem=~/Games:create
   - --filesystem=/run/media
   - --filesystem=/media
@@ -26,7 +26,7 @@ modules:
   - name: unappimage
     buildsystem: simple
     build-commands:
-      # El AppImage usa Zstandard; el extractor anterior a C23 necesita C17.
+      # The AppImage uses Zstandard; the pre-C23 extractor requires C17.
       - make -C squashfs-tools -j ${FLATPAK_BUILDER_N_JOBS} ZSTD_SUPPORT=1 EXTRA_CFLAGS=-std=gnu17 install INSTALL_DIR=/app/bin
     sources:
       - type: git
@@ -49,7 +49,7 @@ modules:
         filename: epic-games-launcher.appimage
         only-arches:
           - x86_64
-        # Versión 0.95.2+gfa9ad49: URL fijada tras resolver la descarga oficial.
+        # Immutable versioned URL resolved from the official installer endpoint.
         url: https://content-download-egs.distro.on.epicgames.com/Builds/EGLv2/0.95.2%2Bgfa9ad49/Linux/EpicGamesLauncher-x86_64.AppImage?launcherfilename=EpicGamesLauncher-x86_64.AppImage
         sha256: 7066159ec987afcdc27069f070b456bdb9a805bd5f02114aa7ad86e5559cbfd5
         size: 176355832
