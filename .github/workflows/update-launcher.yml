@@ -1,0 +1,60 @@
+name: Update launcher
+
+on:
+  schedule:
+    - cron: "23 9 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: update-launcher
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          ref: main
+          token: ${{ secrets.SPEC_UPDATE_TOKEN || github.token }}
+
+      - name: Test updater
+        run: python3 -m unittest discover -s tests -v
+
+      - name: Check official AppImage
+        id: update
+        run: python3 scripts/update_launcher.py
+
+      - name: Open or update pull request
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          token: ${{ secrets.SPEC_UPDATE_TOKEN || github.token }}
+          branch: automation/update-launcher
+          base: main
+          delete-branch: true
+          add-paths: |
+            com.epicgames.EpicGamesLauncher.yml
+            com.epicgames.EpicGamesLauncher.metainfo.xml
+          commit-message: 'chore(deps): update Epic Games Launcher to ${{ steps.update.outputs.version }}'
+          title: 'chore(deps): update Epic Games Launcher to ${{ steps.update.outputs.version }}'
+          body: |
+            Update the official Linux AppImage from `${{ steps.update.outputs.previous_version }}` to `${{ steps.update.outputs.version }}`.
+
+            URL: ${{ steps.update.outputs.url }}
+            SHA-256: `${{ steps.update.outputs.sha256 }}`
+            Size: ${{ steps.update.outputs.size }} bytes
+
+            The updater verifies the AppImage header and computes its checksum and size from the download.
+            The versioned source URL is pinned in the manifest; new versions receive an AppStream release entry.
+
+            A Flatpak build and launcher smoke test are still required before merging.
