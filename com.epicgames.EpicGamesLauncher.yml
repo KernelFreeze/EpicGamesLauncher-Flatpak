@@ -50,9 +50,9 @@ modules:
         only-arches:
           - x86_64
         # Immutable versioned URL resolved from the official installer endpoint.
-        url: https://content-download-egs.distro.on.epicgames.com/Builds/EGLv2/0.96.0%2Bg2fade97/Linux/EpicGamesLauncher-x86_64.AppImage?launcherfilename=EpicGamesLauncher-x86_64.AppImage
-        sha256: 6c5cc46eef8c80b01759cc76154b69a20645b01b79526442a8550090db5d251e
-        size: 181185016
+        url: https://content-download-egs.distro.on.epicgames.com/Builds/EGLv2/0.102.0%2Bg6aa6663/Linux/EpicGamesLauncher-x86_64.AppImage?launcherfilename=EpicGamesLauncher-x86_64.AppImage
+        sha256: 946993bc8c9c9d16e87035c964bd706272c35b5f0486498ec5b707be0db1a578
+        size: 182630904
       - type: file
         path: apply_extra.sh
       - type: file
